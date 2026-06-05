@@ -1,0 +1,17 @@
+
+[window]
+padding = { x = 10, y = 10 }
+opacity = 0.95
+
+[font]
+size = 12.0
+
+[general]
+import = [
+    "~/.config/alacritty/themes/nord.toml"
+]
+
+
+[terminal.shell]
+program = "/usr/bin/bash"
+args = ["--noprofile", "--rcfile", "/home/harshil/.bashrc"]
