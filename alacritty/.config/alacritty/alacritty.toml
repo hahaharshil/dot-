@@ -1,17 +1,39 @@
-
-[window]
-padding = { x = 10, y = 10 }
-opacity = 0.95
-
-[font]
-size = 12.0
+# Stow package: this file and themes/ must be linked together.
+#
+# No [terminal.shell] override on purpose -- the login shell already sources
+# ~/.bashrc, and hardcoding an absolute rcfile path silently skips it on any
+# machine where that path doesn't exist.
 
 [general]
-import = [
-    "~/.config/alacritty/themes/nord.toml"
-]
+import = ["~/.config/alacritty/themes/jetbrains-islands-dark.toml"]
 
+[window]
+padding = { x = 12, y = 12 }
+opacity = 1.0
+option_as_alt = "Both"  # macOS only: make Option send Alt
 
-[terminal.shell]
-program = "/usr/bin/bash"
-args = ["--noprofile", "--rcfile", "/home/harshil/.bashrc"]
+[font]
+size = 10.0  # CLion's own default is 13
+
+# The Nerd Font build is required, not cosmetic: nvim-tree and
+# nvim-web-devicons draw patched glyphs the plain font renders as tofu.
+# Family name is identical on Arch and macOS.
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"  # matches CLion; "Medium" if 10pt reads thin
+
+[font.bold]
+family = "JetBrainsMono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "JetBrainsMono Nerd Font"
+style = "Italic"
+
+# No [colors.*] here on purpose: the theme is the single source of truth.
+
+# ESC+CR -- newline instead of submit, for Claude Code / REPLs / chat TUIs.
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"

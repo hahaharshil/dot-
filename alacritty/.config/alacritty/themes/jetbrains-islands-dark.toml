@@ -1,0 +1,46 @@
+# JetBrains "Islands Dark" — the CLion 2026.2 default console scheme.
+#
+# Extracted from the running install, not eyeballed:
+#   background/foreground  ->  themes/islands/IslandSchemeDark.xml
+#                              (intellij.platform.ide.impl.jar)
+#   the ANSI 16            ->  scheme name="Darcula" in
+#                              DefaultColorSchemesManager.xml, which
+#                              IslandSchemeDark.xml declares as its
+#                              parent_scheme and does not override.
+#
+# JetBrains key -> ANSI name:
+#   CONSOLE_GRAY_OUTPUT     -> normal white
+#   CONSOLE_DARKGRAY_OUTPUT -> bright black
+#   CONSOLE_WHITE_OUTPUT    -> bright white
+#
+# bg/fg is 9.4:1 — above WCAG AAA, and far off the 21:1 of pure black on
+# white, which is what caused the halation at small sizes.
+
+[colors.primary]
+background = '#191A1C'
+foreground = '#bcbec4'
+
+# CARET_COLOR from the Islands scheme.
+[colors.cursor]
+cursor = '#CED0D6'
+text   = '#191A1C'
+
+[colors.normal]
+black   = '#000000'
+red     = '#F0524F'
+green   = '#5C962C'
+yellow  = '#A68A0D'
+blue    = '#3993D4'
+magenta = '#A771BF'
+cyan    = '#00A3A3'
+white   = '#808080'
+
+[colors.bright]
+black   = '#595959'
+red     = '#FF4050'
+green   = '#4FC414'
+yellow  = '#E5BF00'
+blue    = '#1FB0FF'
+magenta = '#ED7EED'
+cyan    = '#00E5E5'
+white   = '#FFFFFF'
