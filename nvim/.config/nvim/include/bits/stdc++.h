@@ -7,7 +7,7 @@
 // libc++, which clangd parses cleanly.
 //
 // This is for the EDITOR only. Actual compilation still goes through
-// g++-15, which uses GCC's real bits/stdc++.h.
+// the discovered Homebrew GCC, which has the real bits/stdc++.h.
 #pragma once
 
 // C library

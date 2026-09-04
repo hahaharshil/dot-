@@ -50,12 +50,27 @@ local function problem_id(task)
   return name
 end
 
--- Prefer the Homebrew GCC, fall back to whatever the system provides.
--- Defined up here because both :Run and CompetiTest need it.
+-- Prefer a real GCC, because the CP template includes <bits/stdc++.h>, which
+-- Apple's clang does not ship. Defined up here because both :Run and
+-- CompetiTest need it.
 local function compiler_for(ext)
-  local brew = ext == 'c' and '/opt/homebrew/bin/gcc-15' or '/opt/homebrew/bin/g++-15'
-  if vim.fn.executable(brew) == 1 then
-    return brew
+  local name = ext == 'c' and 'gcc' or 'g++'
+  -- Homebrew keeps GCC version-suffixed (g++-15, g++-16, ...). Discover the
+  -- newest rather than pinning one, since brew bumps the major on its own
+  -- schedule. /opt/homebrew = Apple Silicon, /usr/local = Intel.
+  for _, prefix in ipairs({ '/opt/homebrew/bin', '/usr/local/bin' }) do
+    local found = vim.fn.glob(prefix .. '/' .. name .. '-[0-9]*', false, true)
+    table.sort(found, function(a, b)
+      return (tonumber(a:match('%-(%d+)$')) or 0) > (tonumber(b:match('%-(%d+)$')) or 0)
+    end)
+    if found[1] then return found[1] end
+  end
+  -- On Linux bare cc/c++ is GCC, so this is fine. On macOS it's Apple clang,
+  -- which will fail on the template's first line -- say so now rather than
+  -- letting it look like a compile error in the user's own code.
+  if vim.fn.has('mac') == 1 then
+    vim.notify('No Homebrew GCC found -- run `brew install gcc`. '
+      .. '<bits/stdc++.h> will not compile under Apple clang.', vim.log.levels.WARN)
   end
   return ext == 'c' and 'cc' or 'c++'
 end
@@ -74,7 +89,10 @@ vim.opt.rtp:prepend(lazypath)
 
 -- 2. PLUGINS (LSP + SUGGESTIONS)
 require("lazy").setup({
-  "neovim/nvim-lspconfig", -- Enables "Smart" C/C++ support
+  -- Not require()d anywhere: it supplies clangd's filetypes/cmd/root_markers
+  -- via runtimepath (see the vim.lsp.config call below). Removing it stops
+  -- clangd attaching at all.
+  "neovim/nvim-lspconfig",
   "echasnovski/mini.nvim", -- A "Swiss Army Knife" of tiny, fast modules
   "ellisonleao/gruvbox.nvim",
   {
@@ -151,11 +169,11 @@ if vim.fn.has('mac') == 1 then
   }
 end
 
-vim.lsp.config('clangd', {
-  cmd = { "clangd" },
-  cmd_env = clangd_env,
-  root_markers = { ".git", "compile_commands.json" },
-})
+-- nvim-lspconfig is never require()d, but it is load-bearing: it ships
+-- lsp/clangd.lua on the runtimepath, which nvim >=0.11 merges in here. That
+-- is where filetypes, cmd and root_markers come from -- and its root_markers
+-- is a superset of the obvious pair, so don't re-specify them and narrow it.
+vim.lsp.config('clangd', { cmd_env = clangd_env })
 
 if vim.fn.executable('clangd') == 1 then
   vim.lsp.enable('clangd')
