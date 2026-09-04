@@ -34,6 +34,14 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
 
+# Wallpaper. The path is passed twice on purpose: with two monitors, feh maps
+# one argument per screen. Given once instead, it stretches a single copy over
+# the whole 3840x1080 root window, and filling a 32:9 area from a 16:9 image
+# crops the sky and the foreground away. Once per screen means each 1920x1080
+# monitor gets an exact 2x downscale of the 3840x2160 source -- no crop, no
+# distortion. Add another copy of the path if a third monitor appears.
+exec --no-startup-id feh --no-fehbg --bg-fill ~/Pictures/wallpapers/mountain.png ~/Pictures/wallpapers/mountain.png
+
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
