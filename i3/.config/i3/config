@@ -26,8 +26,17 @@ exec --no-startup-id dex --autostart --environment i3
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
 
-# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
-# screen before suspend. Use loginctl lock-session to lock your screen.
+# Never blank or power down the screen, and never lock on idle. X defaults to
+# blanking after 10 minutes with DPMS on top; xss-lock listens for that same
+# screensaver signal, so the single timer was both turning the screen off and
+# locking it. Disabling it stops both -- the only lock left is $mod+q.
+#
+# Requires xorg-xset. Must come before xss-lock so the timer is already off.
+exec --no-startup-id xset s off -dpms
+
+# xss-lock is kept, but with the idle timer disabled above it can now only
+# fire on suspend/hibernate, which is user-initiated. Delete this line too if
+# you don't want the screen locked even then.
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,

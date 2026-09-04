@@ -11,7 +11,10 @@ bash/.bashrc, bash/.bash_profile          ->  ~/.bashrc, ~/.bash_profile
 ```
 
 Stow one package at a time, so a macOS machine can take `nvim` without `i3`.
-`i3` is Linux-only; `nvim`, `alacritty` and `bash` are portable as-is.
+`i3` is Linux-only; `nvim`, `alacritty` and `bash` are portable as-is. It
+needs `feh` (wallpaper) and `xorg-xset` (disables screen blanking and the
+idle lock) — both are `exec` lines, so a missing binary fails silently at
+login rather than erroring.
 
 The `alacritty` package ships `themes/` alongside `alacritty.toml`, because the
 config `import`s a theme from it. Stow both together (`stow -t ~ alacritty`) —
