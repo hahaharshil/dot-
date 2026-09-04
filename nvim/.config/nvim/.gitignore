@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# nvim state that should not sync between machines
+spell/
