@@ -18,10 +18,14 @@ Stow one package at a time, so a macOS machine can take `nvim` without `i3`.
 brew install stow          # or: apt install stow
 git clone https://github.com/hahaharshil/dot-.git ~/code/dot-
 cd ~/code/dot-
-stow nvim          # or: stow nvim i3 alacritty bash
+stow -t ~ nvim     # or: stow -t ~ nvim i3 alacritty bash
 ```
 
-`stow nvim` symlinks `~/.config/nvim` to this repo, so edits in either place are
+**`-t ~` is required.** Stow defaults its target to the *parent* of the repo, so
+a bare `stow nvim` from `~/code/dot-` would link into `~/code/`, not `~`.
+Undo a mistake with `stow -D nvim` (same flags you stowed with).
+
+`stow -t ~ nvim` symlinks `~/.config/nvim` to this repo, so edits in either place are
 the same files.
 
 If `~/.config/nvim` already exists as a real directory, move it aside first —
@@ -29,8 +33,11 @@ stow refuses to overwrite:
 
 ```sh
 mv ~/.config/nvim ~/.config/nvim.bak
-stow nvim
+stow -t ~ nvim
 ```
+
+Verify with `ls -ld ~/.config/nvim` — it should show an arrow into this repo.
+Then remove the backup.
 
 ## Neovim
 
