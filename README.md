@@ -12,9 +12,22 @@ bash/.bashrc, bash/.bash_profile          ->  ~/.bashrc, ~/.bash_profile
 
 Stow one package at a time, so a macOS machine can take `nvim` without `i3`.
 `i3` is Linux-only; `nvim`, `alacritty` and `bash` are portable as-is. It
-needs `feh` (wallpaper) and `xorg-xset` (disables screen blanking and the
-idle lock) — both are `exec` lines, so a missing binary fails silently at
-login rather than erroring.
+needs `feh` (wallpaper), `xorg-xset` (disables screen blanking and the idle
+lock) and `betterlockscreen` (the `$mod+q` lock screen, AUR) — these are
+`exec` lines, so a missing binary fails silently at login rather than
+erroring.
+
+betterlockscreen needs its image cache built once per machine, and again
+whenever the wallpaper or monitor layout changes:
+
+```sh
+betterlockscreen -u ~/Pictures/wallpapers/mountain.png
+```
+
+Without it the lock screen comes up blank rather than failing loudly. Its
+theme is `i3/.config/betterlockscreen/betterlockscreenrc` in this repo —
+note the directory: the older `~/.config/betterlockscreenrc` path still works
+but warns on every lock.
 
 The `alacritty` package ships `themes/` alongside `alacritty.toml`, because the
 config `import`s a theme from it. Stow both together (`stow -t ~ alacritty`) —

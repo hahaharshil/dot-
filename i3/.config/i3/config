@@ -37,7 +37,10 @@ exec --no-startup-id xset s off -dpms
 # xss-lock is kept, but with the idle timer disabled above it can now only
 # fire on suspend/hibernate, which is user-initiated. Delete this line too if
 # you don't want the screen locked even then.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+#
+# Same locker as $mod+q so a suspend doesn't fall back to the stock i3lock.
+# betterlockscreen sets -n (nofork) internally, which is what xss-lock needs.
+exec --no-startup-id xss-lock --transfer-sleep-lock -- betterlockscreen -l dim
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
@@ -210,8 +213,10 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# Lock the screen with $mod+q ($mod+Shift+q kills the focused window)
-bindsym $mod+q exec i3lock -c 000000
+# Lock the screen with $mod+q ($mod+Shift+q kills the focused window).
+# Theme lives in ~/.config/betterlockscreen/betterlockscreenrc. Needs the
+# image cache built once: betterlockscreen -u ~/Pictures/wallpapers/mountain.png
+bindsym $mod+q exec --no-startup-id betterlockscreen -l dim
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)

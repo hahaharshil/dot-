@@ -1,0 +1,42 @@
+# betterlockscreen -- the $mod+q lock screen.
+#
+# Path matters: ~/.config/betterlockscreenrc still works but is deprecated and
+# prints a migration warning on every lock. This is the current location.
+#
+# Colours are the JetBrains Islands Dark / Darcula values also used by
+# alacritty/.config/alacritty/themes/jetbrains-islands-dark.toml, as rrggbbaa.
+
+display_on=0            # clock and ring on DP-0, the primary
+dim_level=40
+font="JetBrainsMono Nerd Font"
+
+bgcolor=191a1cff        # Islands Dark background
+loginbox=191a1caa
+locktext="Locked"
+
+timecolor=bcbec4ff      # Islands Dark foreground
+time_format="%H:%M"
+greetercolor=808080ff
+layoutcolor=808080ff
+
+ringcolor=3993d4ff      # Darcula blue
+insidecolor=191a1c88
+separatorcolor=00000000
+ringvercolor=4fc414ff   # green while verifying
+insidevercolor=191a1c88
+ringwrongcolor=f0524fff # red on a wrong password
+insidewrongcolor=f0524f44
+keyhlcolor=4fc414ff
+bshlcolor=e5bf00ff
+verifcolor=bcbec4ff
+wrongcolor=f0524fff
+modifcolor=e5bf00ff
+
+# The stock layout is a small ring at the bottom-left with the time beside it,
+# and betterlockscreen passes `--date-str ""` itself, so there is no date at
+# all. lockargs is appended after every built-in flag (and after the internal
+# `lockargs=(-n)`), so these win. Centre the whole group and put a date back.
+lockargs+=(--ind-pos="x+w/2:y+h/2+120")
+lockargs+=(--time-pos="x+w/2:y+h/2-40" --time-size=96)
+lockargs+=(--date-str="%A, %d %B" --date-pos="x+w/2:y+h/2+10" --date-size=28 --date-color=808080ff --date-font="JetBrainsMono Nerd Font")
+lockargs+=(--greeter-pos="x+w/2:y+h/2+175")
