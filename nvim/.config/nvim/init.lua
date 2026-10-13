@@ -153,7 +153,7 @@ require("gruvbox").setup({ contrast = "hard"})
 vim.cmd("colorscheme gruvbox")
 
 require('mini.completion').setup({}) -- Simple, lightweight auto-suggestion
-require('mini.pairs').setup({})      -- Auto-close brackets, quotes, braces
+-- require('mini.pairs').setup({})      -- Auto-close brackets, quotes, braces
 
 -- 4. LSP
 -- macOS has no bits/stdc++.h (that's a GCC header, and Apple ships clang).

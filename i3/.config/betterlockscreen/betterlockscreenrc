@@ -35,8 +35,27 @@ modifcolor=e5bf00ff
 # The stock layout is a small ring at the bottom-left with the time beside it,
 # and betterlockscreen passes `--date-str ""` itself, so there is no date at
 # all. lockargs is appended after every built-in flag (and after the internal
-# `lockargs=(-n)`), so these win. Centre the whole group and put a date back.
-lockargs+=(--ind-pos="x+w/2:y+h/2+120")
-lockargs+=(--time-pos="x+w/2:y+h/2-40" --time-size=96)
-lockargs+=(--date-str="%A, %d %B" --date-pos="x+w/2:y+h/2+10" --date-size=28 --date-color=808080ff --date-font="JetBrainsMono Nerd Font")
-lockargs+=(--greeter-pos="x+w/2:y+h/2+175")
+# `lockargs=(-n)`), so these win.
+#
+# Every text needs an explicit align: betterlockscreen passes `--time-align 1`
+# and per i3lock(1) that is LEFT (0 centred, 1 left, 2 right). Setting only a
+# position centres the text's left edge on the middle of the screen, which
+# just pushes it off to the right.
+#
+# Positions are relative to the indicator (ix/iy) so the whole stack moves
+# together if the ring is repositioned -- only --ind-pos is absolute.
+lockargs+=(--ind-pos="x+w/2:y+h/2+100")
+
+lockargs+=(--time-pos="ix:iy-200" --time-align 0 --time-size=96)
+
+lockargs+=(--date-str="%A, %d %B" --date-pos="ix:iy-130" --date-align 0
+           --date-size=28 --date-color=808080ff
+           --date-font="JetBrainsMono Nerd Font")
+
+lockargs+=(--greeter-pos="ix:iy-90" --greeter-align 0 --greeter-size=18)
+
+# "Verifying..." / "Failure!" / modifier hints default to sitting beside the
+# old bottom-left ring, right-aligned. Centre them under the ring instead.
+lockargs+=(--verif-pos="ix:iy+70"  --verif-align 0)
+lockargs+=(--wrong-pos="ix:iy+70"  --wrong-align 0)
+lockargs+=(--modif-pos="ix:iy+95"  --modif-align 0)
