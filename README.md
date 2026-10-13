@@ -5,7 +5,9 @@ directory is a stow package whose contents mirror `$HOME`.
 
 ```
 nvim/.config/nvim/                        ->  ~/.config/nvim/
-i3/.config/i3/config                      ->  ~/.config/i3/config
+i3/.config/i3/config, hosts/               ->  ~/.config/i3/config, hosts/
+i3/.config/i3blocks/                      ->  ~/.config/i3blocks/
+i3/.config/betterlockscreen/              ->  ~/.config/betterlockscreen/
 alacritty/.config/alacritty/              ->  ~/.config/alacritty/
 bash/.bashrc, bash/.bash_profile          ->  ~/.bashrc, ~/.bash_profile
 ```
@@ -17,8 +19,44 @@ lock) and `betterlockscreen` (the `$mod+q` lock screen, AUR) — these are
 `exec` lines, so a missing binary fails silently at login rather than
 erroring.
 
-betterlockscreen needs its image cache built once per machine, and again
-whenever the wallpaper or monitor layout changes:
+On Arch, everything the packages use:
+
+```sh
+sudo pacman -S i3-wm i3blocks dmenu alacritty neovim stow feh xorg-xset xss-lock dex network-manager-applet flameshot xclip clang gcc fastfetch brightnessctl ttf-jetbrains-mono-nerd
+yay -S betterlockscreen
+```
+
+`xclip` is not optional: nvim sets `clipboard = 'unnamedplus'`, which silently
+does nothing on X11 without a clipboard tool. `clangd` comes from the `clang`
+package.
+
+### Per-machine i3 config (`hosts/`)
+
+The idle timer differs per machine: the desktop (`archlinux`) never blanks or
+locks, the laptop (`karma`) locks after 5 minutes and turns the screen off
+after 10. i3's `include` can add settings but not override earlier ones, so the
+`xset` line lives only in `i3/.config/i3/hosts/<hostname>.conf`, pulled in by
+`` include ~/.config/i3/hosts/`uname -n`.conf ``.
+
+**A new machine needs its own file named after `uname -n`**, or i3 shows a
+config error at login. Copy the closest existing one.
+
+### Status bar (i3blocks)
+
+The cpu, memory and bandwidth blocks run scripts from
+[i3blocks-contrib](https://github.com/vivien/i3blocks-contrib), which is not
+vendored. Clone it once per machine:
+
+```sh
+git clone https://github.com/vivien/i3blocks-contrib ~/.config/i3blocks-contrib
+```
+
+The battery block sums every `BAT*` (the T480 has two) and prints nothing on a
+machine without one, so i3blocks hides it on the desktop.
+
+betterlockscreen needs its image cache built once per machine (it is sized to
+the screen layout, so it does not carry over), and again whenever the
+wallpaper or monitor layout changes:
 
 ```sh
 betterlockscreen -u ~/Pictures/wallpapers/mountain.png
@@ -64,7 +102,7 @@ terminal looks unstyled, check `fc-list | grep JetBrains` first.
 ## Setting up a new machine
 
 ```sh
-brew install stow          # or: apt install stow
+sudo pacman -S stow        # or: brew install stow / apt install stow
 git clone https://github.com/hahaharshil/dot-.git ~/code/dot-
 cd ~/code/dot-
 stow -t ~ nvim     # or: stow -t ~ nvim i3 alacritty bash
