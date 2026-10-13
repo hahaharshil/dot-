@@ -1,0 +1,31 @@
+# The cpu/memory/bandwidth scripts come from i3blocks-contrib, which is not
+# vendored here -- see the README for the one-line clone.
+
+[cpu_usage]
+command=$HOME/.config/i3blocks-contrib/cpu_usage/cpu_usage
+interval=2
+
+[memory]
+command=$HOME/.config/i3blocks-contrib/memory/memory
+interval=5
+
+[bandwidth]
+command=$HOME/.config/i3blocks-contrib/bandwidth/bandwidth
+interval=1
+
+# Prints nothing on a machine with no battery, and i3blocks hides empty
+# blocks, so the same config serves the desktop and the laptop.
+[battery]
+command=$HOME/.config/i3blocks/scripts/battery
+interval=30
+
+# signal=10 pairs with `pkill -RTMIN+10 i3blocks` in the i3 volume keybindings,
+# so the display updates on keypress instead of waiting for the interval.
+[volume]
+command=$HOME/.config/i3blocks/scripts/volume
+interval=1
+signal=10
+
+[time]
+command=date '+%H:%M'
+interval=1

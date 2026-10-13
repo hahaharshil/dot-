@@ -1,0 +1,9 @@
+#!/bin/bash
+
+vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+
+if echo "$vol" | grep -q MUTED; then
+    echo "VOL MUTE"
+else
+    echo "VOL $(awk '{print int($2*100)}' <<< "$vol")%"
+fi

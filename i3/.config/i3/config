@@ -26,17 +26,18 @@ exec --no-startup-id dex --autostart --environment i3
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
 
-# Never blank or power down the screen, and never lock on idle. X defaults to
-# blanking after 10 minutes with DPMS on top; xss-lock listens for that same
-# screensaver signal, so the single timer was both turning the screen off and
-# locking it. Disabling it stops both -- the only lock left is $mod+q.
+# Idle blanking/locking differs per machine (the desktop never locks on idle,
+# the laptop must, to save battery). i3's include can add config but cannot
+# override earlier settings, so the xset line lives only in hosts/<name>.conf
+# and every machine needs a file there or i3 shows a config error at login.
+# `uname -n`, not `hostname`: a minimal Arch install has no hostname binary.
 #
-# Requires xorg-xset. Must come before xss-lock so the timer is already off.
-exec --no-startup-id xset s off -dpms
+# Must come before xss-lock so the idle timer is already set.
+include ~/.config/i3/hosts/`uname -n`.conf
 
-# xss-lock is kept, but with the idle timer disabled above it can now only
-# fire on suspend/hibernate, which is user-initiated. Delete this line too if
-# you don't want the screen locked even then.
+# xss-lock locks on the idle timer set in hosts/<name>.conf, and on
+# suspend/hibernate. Where that file disables the timer (the desktop) it can
+# only fire on suspend, which is user-initiated.
 #
 # Same locker as $mod+q so a suspend doesn't fall back to the stock i3lock.
 # betterlockscreen sets -n (nofork) internally, which is what xss-lock needs.
@@ -54,12 +55,18 @@ exec --no-startup-id nm-applet
 # distortion. Add another copy of the path if a third monitor appears.
 exec --no-startup-id feh --no-fehbg --bg-fill ~/Pictures/wallpapers/mountain.png ~/Pictures/wallpapers/mountain.png
 
-# Use pactl to adjust volume in PulseAudio.
-set $refresh_i3status killall -SIGUSR1 i3status
+# Use pactl to adjust volume in PulseAudio. The bar runs i3blocks, so refresh
+# it with the signal= the volume block listens on (RTMIN+10) instead of
+# poking i3status.
+set $refresh_i3status pkill -RTMIN+10 i3blocks
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+
+# Backlight keys. Harmless on a desktop with no backlight.
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl set 5%+
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl set 5%-
 
 # Stremio draws its own UI chrome and is launched with --no-window-decorations,
 # so suppress i3's titlebar/border on it too.

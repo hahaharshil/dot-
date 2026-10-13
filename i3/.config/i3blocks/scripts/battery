@@ -1,0 +1,16 @@
+#!/bin/sh
+# Combined charge across all batteries (the T480 has an internal BAT0 and a
+# swappable BAT1). Prints nothing on machines without one, which hides the block.
+# Firmware reports either energy_* (Wh) or charge_* (Ah); the ratio is the same.
+set -- /sys/class/power_supply/BAT*
+[ -e "$1" ] || exit 0
+now=0; full=0; flag=
+for b in "$@"; do
+    if [ -e "$b/energy_now" ]; then n=energy_now f=energy_full
+    else n=charge_now f=charge_full; fi
+    now=$((now + $(cat "$b/$n")))
+    full=$((full + $(cat "$b/$f")))
+    [ "$(cat "$b/status")" = Charging ] && flag=" +"
+done
+[ "$full" -gt 0 ] || exit 0
+echo "BAT $((now * 100 / full))%$flag"
