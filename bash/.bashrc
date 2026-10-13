@@ -18,4 +18,6 @@ case ":$PATH:" in
     *) export PATH="$HOME/.local/bin:$PATH" ;;
 esac
 
-fastfetch
+# Guarded so a fresh machine without it doesn't print "command not found"
+# in every shell.
+command -v fastfetch >/dev/null && fastfetch
