@@ -29,7 +29,8 @@ exec --no-startup-id dex --autostart --environment i3
 # Idle blanking/locking differs per machine (the desktop never locks on idle,
 # the laptop must, to save battery). i3's include can add config but cannot
 # override earlier settings, so the xset line lives only in hosts/<name>.conf
-# and every machine needs a file there or i3 shows a config error at login.
+# and every machine needs a file there. A missing one is skipped silently,
+# leaving X's default of blanking and locking after 10 minutes.
 # `uname -n`, not `hostname`: a minimal Arch install has no hostname binary.
 #
 # Must come before xss-lock so the idle timer is already set.
@@ -46,14 +47,6 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- betterlockscreen -l dim
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
-
-# Wallpaper. The path is passed twice on purpose: with two monitors, feh maps
-# one argument per screen. Given once instead, it stretches a single copy over
-# the whole 3840x1080 root window, and filling a 32:9 area from a 16:9 image
-# crops the sky and the foreground away. Once per screen means each 1920x1080
-# monitor gets an exact 2x downscale of the 3840x2160 source -- no crop, no
-# distortion. Add another copy of the path if a third monitor appears.
-exec --no-startup-id feh --no-fehbg --bg-fill ~/Pictures/wallpapers/mountain.png ~/Pictures/wallpapers/mountain.png
 
 # Use pactl to adjust volume in PulseAudio. The bar runs i3blocks, so refresh
 # it with the signal= the volume block listens on (RTMIN+10) instead of
@@ -221,8 +214,8 @@ mode "resize" {
 bindsym $mod+r mode "resize"
 
 # Lock the screen with $mod+q ($mod+Shift+q kills the focused window).
-# Theme lives in ~/.config/betterlockscreen/betterlockscreenrc. Needs the
-# image cache built once: betterlockscreen -u ~/Pictures/wallpapers/mountain.png
+# Theme lives in ~/.config/betterlockscreen/betterlockscreenrc. Without an
+# image cache (betterlockscreen -u <image>) it still locks, on a solid colour.
 bindsym $mod+q exec --no-startup-id betterlockscreen -l dim
 
 # Start i3bar to display a workspace bar (plus the system information i3status
