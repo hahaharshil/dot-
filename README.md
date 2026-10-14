@@ -12,6 +12,38 @@ alacritty/.config/alacritty/              ->  ~/.config/alacritty/
 bash/.bashrc, bash/.bash_profile          ->  ~/.bashrc, ~/.bash_profile
 ```
 
+## Quick start (Arch)
+
+On a fresh archinstall (a sudo user, network up, PipeWire for audio; any
+profile, Minimal included), log in at the console and run:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hahaharshil/dot-/master/install.sh | bash
+```
+
+It installs every package below (plus X and the `ly` login screen if none is
+set up, and Bluetooth: `bluez` with the `blueman` tray applet), clones this repo to `~/dot-` and i3blocks-contrib, moves aside any
+file that would block stow (as `*.pre-dotfiles`), stows everything, creates a
+`hosts/` file for a new machine, and pre-installs the nvim plugins. Re-running
+it is safe. On a laptop, follow with:
+
+```sh
+~/dot-/laptop-setup.sh
+```
+
+which does the safe system-level settings: TLP with charge thresholds for every
+battery, touchpad tap-to-click, suspend-then-hibernate (only if hibernation
+already works), and a firmware and sleep-mode check. It writes drop-in files
+under `/etc`, so package upgrades don't fight it. It does nothing on a machine
+without a battery.
+
+The repo is cloned over HTTPS, so pushing from a new machine needs
+`git remote set-url origin git@github.com:hahaharshil/dot-.git` and an SSH key.
+
+The rest of this file explains what the scripts do, for setting up by hand.
+
+## Packages
+
 Stow one package at a time, so a macOS machine can take `nvim` without `i3`.
 `i3` is Linux-only; `nvim`, `alacritty` and `bash` are portable as-is. It
 needs `feh` (wallpaper), `xorg-xset` (disables screen blanking and the idle
@@ -19,12 +51,8 @@ lock) and `betterlockscreen` (the `$mod+q` lock screen, AUR) — these are
 `exec` lines, so a missing binary fails silently at login rather than
 erroring.
 
-On Arch, everything the packages use:
-
-```sh
-sudo pacman -S git i3-wm i3blocks dmenu alacritty neovim stow feh xorg-xset xss-lock dex network-manager-applet flameshot xclip clang gcc fastfetch brightnessctl ttf-jetbrains-mono-nerd sysstat pipewire-pulse wireplumber
-yay -S betterlockscreen
-```
+The full Arch package list is `PACKAGES` at the top of `install.sh`. A few
+that are easy to drop by mistake:
 
 `xclip` is not optional: nvim sets `clipboard = 'unnamedplus'`, which silently
 does nothing on X11 without a clipboard tool. `clangd` comes from the `clang`
@@ -42,14 +70,15 @@ after 10. i3's `include` can add settings but not override earlier ones, so the
 
 **A new machine needs its own file named after `uname -n`.** A missing one is
 skipped silently, which leaves X's default: blank and lock after 10 minutes.
-Copy the closest existing one. The desktop's file also sets the two-monitor
+`install.sh` creates one (laptop or desktop flavour, by whether there's a
+battery); commit it. The desktop's file also sets the two-monitor
 wallpaper; the laptop has none.
 
 ### Status bar (i3blocks)
 
 The cpu, memory and bandwidth blocks run scripts from
 [i3blocks-contrib](https://github.com/vivien/i3blocks-contrib), which is not
-vendored. Clone it once per machine:
+vendored. `install.sh` clones it; by hand:
 
 ```sh
 git clone https://github.com/vivien/i3blocks-contrib ~/.config/i3blocks-contrib
@@ -66,7 +95,7 @@ wallpaper or monitor layout changes:
 betterlockscreen -u ~/Pictures/wallpapers/mountain.png
 ```
 
-Without it the lock screen comes up blank rather than failing loudly. Its
+Without it the lock screen still locks, on a solid colour. Its
 theme is `i3/.config/betterlockscreen/betterlockscreenrc` in this repo —
 note the directory: the older `~/.config/betterlockscreenrc` path still works
 but warns on every lock.
@@ -105,7 +134,8 @@ terminal looks unstyled, check `fc-list | grep JetBrains` first.
 
 ## Setting up a new machine
 
-Two things to do first on a fresh install, or stow goes wrong:
+`install.sh` handles all of this. By hand, two things to do first on a fresh
+install, or stow goes wrong:
 
 - **`mkdir -p ~/.config`.** If it doesn't exist, stow links `~/.config`
   *itself* into the first package, and every app after that writes its
@@ -183,7 +213,9 @@ Apple ships clang, which has no such file. Compilation still uses real GCC.
 
 ## ThinkPad T480 (`karma`)
 
-System setup the dotfiles can't do. Roughly in order of how badly it bites.
+`laptop-setup.sh` covers TLP, charge thresholds, the touchpad, and the lid
+and critical-battery actions once hibernation works. The rest is by hand,
+roughly in order of how badly it bites:
 
 1. **Update firmware before anything else**: `fwupdmgr refresh && fwupdmgr
    update`, on AC power. Early T480 Thunderbolt controller firmware wears out
@@ -193,45 +225,22 @@ System setup the dotfiles can't do. Roughly in order of how badly it bites.
    updates the BIOS.
 2. **Secure Boot** must be off (BIOS → Security) unless you set up `sbctl`, or
    the installed system won't boot.
-3. **Pick NetworkManager** in archinstall, not iwd-only: `nm-applet` in the i3
-   config needs it, and `systemctl enable --now NetworkManager`.
-4. **Sleep state**: BIOS → Config → Power → Sleep State → **Linux**, then
-   `cat /sys/power/mem_sleep` should show `[deep]`. On `s2idle` the battery
-   drains several percent an hour while suspended. Fallback: kernel parameter
+3. **Sleep state**: BIOS → Config → Power → Sleep State → **Linux**, so that
+   `cat /sys/power/mem_sleep` shows `[deep]`. On `s2idle` the battery drains
+   several percent an hour while suspended. Fallback: kernel parameter
    `mem_sleep_default=deep`.
-5. **Hibernation** needs real swap ≥ RAM. archinstall's default swap is
+4. **Hibernation** needs real swap ≥ RAM. archinstall's default swap is
    **zram, which can't hibernate**. Add a swap partition or swapfile (on
    btrfs, get the offset with `btrfs inspect-internal map-swapfile -r`), set
    `resume=` (and `resume_offset=` for a swapfile), and on a busybox
    initramfs add the `resume` hook (the `systemd` hook handles it itself).
-   Then `HandleLidSwitch=suspend-then-hibernate` in
-   `/etc/systemd/logind.conf` and `HibernateDelaySec=1h` in
-   `/etc/systemd/sleep.conf`, so a laptop forgotten in a bag hibernates
-   instead of dying. Test `systemctl hibernate` once before relying on it.
-6. **TLP** (`pacman -S tlp`, `systemctl enable tlp`, mask
-   `systemd-rfkill.service` and `.socket`). Don't also run
-   `power-profiles-daemon`; remove it if archinstall's power profile pulled it
-   in. Set thresholds for *both* batteries in `/etc/tlp.conf`, e.g.
-   `START_CHARGE_THRESH_BAT0=75` / `STOP_CHARGE_THRESH_BAT0=80` and the same
-   for `BAT1`. Then "Not charging" at 79% is normal; `tlp fullcharge` before a
-   long day away.
-7. **Critical battery**: `CriticalPowerAction=Hibernate` in
-   `/etc/UPower/UPower.conf`, but only after step 5 works. Without working
-   hibernation, UPower falls back to powering off.
-8. **Touchpad tap-to-click** is off by default under X:
-
-   ```
-   # /etc/X11/xorg.conf.d/30-touchpad.conf
-   Section "InputClass"
-       Identifier "touchpad"
-       MatchIsTouchpad "on"
-       Driver "libinput"
-       Option "Tapping" "on"
-   EndSection
-   ```
+   Test `systemctl hibernate` once, then re-run `laptop-setup.sh` to switch
+   the lid to suspend-then-hibernate.
 
 Worth knowing:
 
+- **With thresholds set, "Not charging" at 79% is normal.** `sudo tlp
+  fullcharge` charges to 100% once, before a long day away.
 - **The external battery (BAT1) drains first**, then the internal one. That's
   firmware behaviour, not a fault. The bar shows the combined percentage.
 - **Check battery health** on a used machine:

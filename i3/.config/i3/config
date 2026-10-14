@@ -48,6 +48,10 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- betterlockscreen -l dim
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
 
+# Bluetooth tray (pairing, audio devices). Only where there's an adapter, so
+# machines without one don't get an applet with nothing to manage.
+exec --no-startup-id sh -c '[ -d /sys/class/bluetooth ] && exec blueman-applet'
+
 # Use pactl to adjust volume in PulseAudio. The bar runs i3blocks, so refresh
 # it with the signal= the volume block listens on (RTMIN+10) instead of
 # poking i3status.
