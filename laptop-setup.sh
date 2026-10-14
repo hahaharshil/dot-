@@ -15,6 +15,10 @@ set -euo pipefail
 CHARGE_START=75
 CHARGE_STOP=80
 
+# How long the lid-closed laptop stays asleep before hibernating. systemd still
+# hibernates sooner if the battery runs low while asleep.
+HIBERNATE_AFTER=4h
+
 say()  { printf '\n\033[1;32m::\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!!\033[0m %s\n' "$*" >&2; }
 
@@ -91,15 +95,15 @@ sleep_and_lid() {
         org.freedesktop.login1.Manager CanSuspendThenHibernate 2>/dev/null || true)
     if [ "$can" = 's "yes"' ]; then
         put /etc/systemd/logind.conf.d/10-lid.conf <<'EOF'
-# Written by laptop-setup.sh: hibernate after an hour asleep, so a laptop
-# forgotten in a bag doesn't run flat.
+# Written by laptop-setup.sh: hibernate after HibernateDelaySec asleep
+# (sleep.conf.d), so a laptop forgotten in a bag doesn't run flat.
 [Login]
 HandleLidSwitch=suspend-then-hibernate
 EOF
-        put /etc/systemd/sleep.conf.d/10-hibernate-delay.conf <<'EOF'
+        put /etc/systemd/sleep.conf.d/10-hibernate-delay.conf <<EOF
 # Written by laptop-setup.sh
 [Sleep]
-HibernateDelaySec=1h
+HibernateDelaySec=$HIBERNATE_AFTER
 EOF
         # UPower has no drop-in directory, so this one is an in-place edit.
         if [ -f /etc/UPower/UPower.conf ]; then
