@@ -30,10 +30,24 @@ local menu        = "wmenu-run -i -f 'JetBrainsMono Nerd Font 11'"
 
 -- Runs once when Hyprland starts.
 hl.on("hyprland.start", function()
-    hl.exec_cmd("swaybg -m fill -i ~/.config/hypr/wallpaper.jpg") -- wallpaper, scaled to fill the screen
+    -- Wallpaper: whatever was last picked in waypaper; on a fresh machine with no
+    -- waypaper config yet, the one in the dotfiles, scaled to fill the screen.
+    local wp = io.open(os.getenv("HOME") .. "/.config/waypaper/config.ini")
+    if wp then
+        wp:close()
+        hl.exec_cmd("waypaper --restore")
+    else
+        hl.exec_cmd("swaybg -m fill -i ~/.config/hypr/wallpaper.jpg")
+    end
     hl.exec_cmd("waybar")                                -- top bar
     hl.exec_cmd("mako")                                  -- notifications
-    hl.exec_cmd("hypridle")                              -- auto lock / screen off
+    -- Auto lock / screen off / suspend, on laptops only (they have a BAT0 or
+    -- BAT1). The PC stays on until locked or suspended by hand.
+    local bat = io.open("/sys/class/power_supply/BAT0") or io.open("/sys/class/power_supply/BAT1")
+    if bat then
+        bat:close()
+        hl.exec_cmd("hypridle")
+    end
     hl.exec_cmd("nm-applet")                             -- wifi icon in the bar tray
     hl.exec_cmd("systemctl --user start hyprpolkitagent") -- password prompts for GUI apps
     -- Dark mode for GTK4 apps and anything asking the desktop portal (Firefox).
@@ -48,6 +62,16 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+
+-- NVIDIA (the PC's RTX 2060): point VA-API and GLX at NVIDIA's libraries, per
+-- the Hyprland wiki. Only when the NVIDIA driver is loaded, so the laptop's
+-- Intel GPU keeps its own drivers.
+local nv = io.open("/proc/driver/nvidia/version")
+if nv then
+    nv:close()
+    hl.env("LIBVA_DRIVER_NAME", "nvidia")
+    hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+end
 
 
 -------------------
@@ -190,6 +214,13 @@ hl.window_rule({
     name  = "suppress-maximize-events",
     match = { class = ".*" },
     suppress_event = "maximize",
+})
+
+-- Steam games (class steam_app_<id>) open truly fullscreen: no gaps, border or bar.
+hl.window_rule({
+    name  = "steam-games-fullscreen",
+    match = { class = "^steam_app_.*" },
+    fullscreen = true,
 })
 
 -- Fixes drag-and-drop glitches in some X11 (XWayland) apps.

@@ -38,6 +38,8 @@ HYPRLAND_PACKAGES=(
     xdg-desktop-portal-hyprland xdg-desktop-portal-gtk waybar mako bluetui swaybg spotify-player libnotify
     grim slurp wl-clipboard playerctl pcmanfm noto-fonts noto-fonts-emoji
 )
+I3_AUR_PACKAGES=(betterlockscreen)
+HYPRLAND_AUR_PACKAGES=(waypaper)
 STOW_PACKAGES=(nvim alacritty kitty bash)  # plus one per desktop: i3, hyprland
 
 say()  { printf '\n\033[1;32m::\033[0m %s\n' "$*"; }
@@ -52,7 +54,7 @@ main() {
 
     pick_desktops
     install_packages
-    has_desktop i3 && install_aur
+    install_aur
     clone_repos
     stow_packages
     has_desktop i3 && ensure_host_file
@@ -115,6 +117,10 @@ install_packages() {
 }
 
 install_aur() {
+    local aur=()
+    has_desktop i3       && aur+=("${I3_AUR_PACKAGES[@]}")
+    has_desktop hyprland && aur+=("${HYPRLAND_AUR_PACKAGES[@]}")
+    [ ${#aur[@]} -gt 0 ] || return 0
     local helper
     helper=$(command -v yay || command -v paru || true)
     if [ -z "$helper" ]; then
@@ -126,8 +132,8 @@ install_aur() {
         rm -rf "$tmp"
         helper=yay
     fi
-    say "Installing betterlockscreen (AUR)"
-    "$helper" -S --needed --noconfirm betterlockscreen
+    say "Installing ${aur[*]} (AUR)"
+    "$helper" -S --needed --noconfirm "${aur[@]}"
 }
 
 clone_repos() {

@@ -111,7 +111,8 @@ locks before every suspend.
 
 ### Autostart
 
-`swaybg`, `waybar`, `mako`, `hypridle`, `nm-applet`, `hyprpolkitagent`, and
+the wallpaper (`waypaper --restore`, or `swaybg` with `wallpaper.jpg` before
+waypaper has a config), `waybar`, `mako`, `hypridle` (laptops only), `nm-applet`, `hyprpolkitagent`, and
 `gsettings ... color-scheme prefer-dark`.
 
 ## Neovim
@@ -167,5 +168,6 @@ also Intel.
   `monitors.lua` from nwg-displays is machine-specific and not in the repo.
 - **No battery:** waybar's battery module hides itself, and `install.sh`
   skips the laptop steps.
-- **Idle suspend at 15 min** comes from `hypridle.conf`. Remove that
-  listener if the PC shouldn't sleep.
+- **Idle lock, screen off and suspend** come from hypridle, which
+  `hyprland.lua` starts only when `/sys/class/power_supply/BAT0` or `BAT1`
+  exists. A PC never locks, blanks or sleeps on its own, as under i3.
