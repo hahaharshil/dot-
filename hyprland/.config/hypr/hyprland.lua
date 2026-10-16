@@ -30,6 +30,7 @@ local menu        = "wmenu-run -i -f 'JetBrainsMono Nerd Font 11'"
 
 -- Runs once when Hyprland starts.
 hl.on("hyprland.start", function()
+    hl.exec_cmd("swaybg -m fill -i ~/.config/hypr/wallpaper.jpg") -- wallpaper, scaled to fill the screen
     hl.exec_cmd("waybar")                                -- top bar
     hl.exec_cmd("mako")                                  -- notifications
     hl.exec_cmd("hypridle")                              -- auto lock / screen off
@@ -128,6 +129,10 @@ hl.bind(mainMod .. " + E",      hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + SHIFT + Q",     hl.dsp.window.close())
 hl.bind(mainMod .. " + F",             hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mainMod .. " + SHIFT + space", hl.dsp.window.float({ action = "toggle" }))
+
+-- Splits, like i3: choose where the NEXT window opens, then open it.
+hl.bind(mainMod .. " + B", hl.dsp.layout("preselect r"))  -- next window to the right (side by side)
+hl.bind(mainMod .. " + V", hl.dsp.layout("preselect d"))  -- next window below (stacked)
 
 -- Session
 hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exit())

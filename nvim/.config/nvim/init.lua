@@ -149,7 +149,9 @@ require("lazy").setup({
 })
 
 -- 3. COLORSCHEME & UI
-require("gruvbox").setup({ contrast = "hard"})
+-- transparent_mode: no background of its own, so the terminal's (slightly
+-- see-through) background shows behind the text.
+require("gruvbox").setup({ contrast = "hard", transparent_mode = true })
 vim.cmd("colorscheme gruvbox")
 
 require('mini.completion').setup({}) -- Simple, lightweight auto-suggestion

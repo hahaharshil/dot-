@@ -24,7 +24,7 @@
     "clock": {
         "format": "  {:%H:%M:%S}",
         "format-alt": "  {:%A %d %B %Y}",
-        "tooltip-format": "<tt>{calendar}</tt>"   // hover = month calendar
+        "interval": 1
     },
 
     "cpu": {

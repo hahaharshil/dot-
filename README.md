@@ -9,7 +9,7 @@ i3/.config/i3/config, hosts/               ->  ~/.config/i3/config, hosts/
 i3/.config/i3blocks/                      ->  ~/.config/i3blocks/
 i3/.config/betterlockscreen/              ->  ~/.config/betterlockscreen/
 hyprland/.config/hypr/                    ->  ~/.config/hypr/
-hyprland/.config/waybar/, mako/           ->  ~/.config/waybar/, mako/
+hyprland/.config/waybar/, mako/, spotify-player/ ->  ~/.config/waybar/, mako/, spotify-player/
 alacritty/.config/alacritty/              ->  ~/.config/alacritty/
 kitty/.config/kitty/                      ->  ~/.config/kitty/
 bash/.bashrc, bash/.bash_profile          ->  ~/.bashrc, ~/.bash_profile

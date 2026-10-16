@@ -35,7 +35,7 @@ I3_PACKAGES=(
 )
 HYPRLAND_PACKAGES=(
     hyprland wmenu hyprlock hypridle hyprpolkitagent
-    xdg-desktop-portal-hyprland xdg-desktop-portal-gtk waybar mako bluetui
+    xdg-desktop-portal-hyprland xdg-desktop-portal-gtk waybar mako bluetui swaybg spotify-player libnotify
     grim slurp wl-clipboard playerctl pcmanfm noto-fonts noto-fonts-emoji
 )
 STOW_PACKAGES=(nvim alacritty kitty bash)  # plus one per desktop: i3, hyprland
