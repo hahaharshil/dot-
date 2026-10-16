@@ -104,6 +104,13 @@ install_packages() {
         # shellcheck disable=SC2086 # one package name per word
         sudo pacman -Rdd --noconfirm $pulse
     fi
+    # Same for jack2, which waybar and ffmpeg pull in, against pipewire-jack.
+    # -dd is safe: pipewire-jack provides jack, so its dependents stay satisfied.
+    if pacman -Qq jack2 >/dev/null 2>&1; then
+        warn "Replacing jack2 with pipewire-jack"
+        sudo pacman -Rdd --noconfirm jack2
+        PACKAGES+=(pipewire-jack)
+    fi
     sudo pacman -Syu --needed --noconfirm "${PACKAGES[@]}"
 }
 
