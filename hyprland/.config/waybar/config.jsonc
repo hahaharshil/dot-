@@ -1,0 +1,87 @@
+// waybar: the top bar. Docs: https://github.com/Alexays/Waybar/wiki
+// Icons are Nerd Font glyphs; they show as boxes unless the editor uses a Nerd Font.
+{
+    "position": "top",
+    "height": 30,
+    "spacing": 4,                       // gap between modules
+    "reload_style_on_change": true,     // edit style.css and the bar updates live
+
+    "modules-left":   ["hyprland/workspaces", "hyprland/window"],
+    "modules-center": ["clock"],
+    "modules-right":  ["cpu", "temperature", "custom/ram", "backlight", "pulseaudio", "network", "battery", "tray"],
+
+    // Workspace numbers; click one to go there
+    "hyprland/workspaces": {
+        "format": "{id}"
+    },
+
+    // Title of the focused window, cut short so it can't eat the bar
+    "hyprland/window": {
+        "max-length": 50
+    },
+
+    // Click the clock to switch between time and full date
+    "clock": {
+        "format": "  {:%H:%M:%S}",
+        "format-alt": "  {:%A %d %B %Y}",
+        "tooltip-format": "<tt>{calendar}</tt>"   // hover = month calendar
+    },
+
+    "cpu": {
+        "format": "  {usage}%",
+        "interval": 5
+    },
+
+    // CPU temperature from Intel's coretemp sensor. A fixed device path, because
+    // the hwmonN numbers can change between boots. Turns red at 80°C.
+    "temperature": {
+        "hwmon-path-abs": "/sys/devices/platform/coretemp.0/hwmon",
+        "input-filename": "temp1_input",
+        "critical-threshold": 80,
+        "format": "  {temperatureC}°C",
+        "interval": 5
+    },
+
+    // RAM in use, in MB. waybar's own memory module only does % or GiB,
+    // so this runs `free -m` every 5s and prints the "used" column.
+    "custom/ram": {
+        "exec": "free -m | awk '/^Mem/ {print $3}'",
+        "format": "  {} MB",
+        "interval": 5,
+        "tooltip": false
+    },
+
+    // Screen brightness; scroll on it to change
+    "backlight": {
+        "format": "  {percent}%",
+        "on-scroll-up": "brightnessctl set 5%+",
+        "on-scroll-down": "brightnessctl set 5%-"
+    },
+
+    // Volume; scroll to change, click to mute
+    "pulseaudio": {
+        "format": "  {volume}%",
+        "format-muted": "  muted",
+        "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "scroll-step": 5
+    },
+
+    "network": {
+        "format-wifi": "  {essid}",
+        "format-ethernet": "  wired",
+        "format-disconnected": "  offline",
+        "tooltip-format": "{ifname}  {ipaddr}"
+    },
+
+    // Icon picks one of 5 battery levels from empty to full
+    "battery": {
+        "format": "{icon}  {capacity}%",
+        "format-charging": "  {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "states": { "warning": 25, "critical": 10 }   // adds CSS classes below these %
+    },
+
+    "tray": {
+        "spacing": 8
+    }
+}

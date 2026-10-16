@@ -1,0 +1,61 @@
+/* waybar look. Colors match the Hyprland border (#33ccff). */
+
+* {
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    border: none;
+    min-height: 0;
+}
+
+/* the bar itself: transparent, so the modules look like floating pills */
+window#waybar {
+    background: transparent;
+    color: #dddddd;
+}
+
+/* every module: a dark rounded pill */
+#workspaces, #window, #clock, #cpu, #temperature, #custom-ram, #backlight,
+#pulseaudio, #network, #battery, #tray {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: 0 12px;
+    margin: 4px 0;
+}
+
+/* first and last pill get a gap from the screen edge */
+.modules-left  { margin-left: 8px; }
+.modules-right { margin-right: 8px; }
+
+/* hide the window-title pill when no window is open */
+window#waybar.empty #window {
+    background: transparent;
+}
+
+#workspaces { padding: 0 4px; }
+
+#workspaces button {
+    color: #888888;
+    padding: 0 6px;
+    border-radius: 6px;
+}
+
+/* the workspace you are on */
+#workspaces button.active {
+    background: #33ccff;
+    color: #1e1e2e;
+}
+
+#workspaces button:hover {
+    background: #333344;
+}
+
+#clock { color: #33ccff; }
+
+#pulseaudio.muted,
+#network.disconnected { color: #888888; }
+
+#battery.charging                { color: #a6e3a1; }
+#battery.warning:not(.charging)  { color: #f9e2af; }
+#battery.critical:not(.charging) { color: #f38ba8; }
+
+#temperature.critical { color: #f38ba8; }   /* 80°C and above */

@@ -8,7 +8,10 @@ nvim/.config/nvim/                        ->  ~/.config/nvim/
 i3/.config/i3/config, hosts/               ->  ~/.config/i3/config, hosts/
 i3/.config/i3blocks/                      ->  ~/.config/i3blocks/
 i3/.config/betterlockscreen/              ->  ~/.config/betterlockscreen/
+hyprland/.config/hypr/                    ->  ~/.config/hypr/
+hyprland/.config/waybar/, mako/           ->  ~/.config/waybar/, mako/
 alacritty/.config/alacritty/              ->  ~/.config/alacritty/
+kitty/.config/kitty/                      ->  ~/.config/kitty/
 bash/.bashrc, bash/.bash_profile          ->  ~/.bashrc, ~/.bash_profile
 ```
 
@@ -18,10 +21,16 @@ On a fresh archinstall (a sudo user, network up, PipeWire for audio; any
 profile, Minimal included), log in at the console and run:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/hahaharshil/dot-/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hahaharshil/dot-/master/install.sh | bash                    # i3
+curl -fsSL https://raw.githubusercontent.com/hahaharshil/dot-/master/install.sh | DESKTOP=hyprland bash   # Hyprland
 ```
 
-It installs every package below (plus X and the `ly` login screen if none is
+Without `DESKTOP` it sets up whichever of i3 and Hyprland is already installed
+(both, if both are), and i3 on a machine with neither. The two never read each
+other's files, so a machine with both stowed is fine: pick one at the `ly`
+login screen.
+
+It installs every package below (plus X for i3 and the `ly` login screen if none is
 set up, and Bluetooth: `bluez` with the `blueman` tray applet), clones this repo to `~/dot-` and i3blocks-contrib, moves aside any
 file that would block stow (as `*.pre-dotfiles`), stows everything, creates a
 `hosts/` file for a new machine, and pre-installs the nvim plugins. Re-running
@@ -45,13 +54,16 @@ The rest of this file explains what the scripts do, for setting up by hand.
 ## Packages
 
 Stow one package at a time, so a macOS machine can take `nvim` without `i3`.
-`i3` is Linux-only; `nvim`, `alacritty` and `bash` are portable as-is. It
+`i3` and `hyprland` are Linux-only; `nvim`, `alacritty`, `kitty` and `bash`
+are portable as-is (on a Mac: `brew install stow kitty`, then
+`stow -d ~/dot- -t ~ kitty`). `i3`
 needs `feh` (wallpaper), `xorg-xset` (disables screen blanking and the idle
 lock) and `betterlockscreen` (the `$mod+q` lock screen, AUR) — these are
 `exec` lines, so a missing binary fails silently at login rather than
 erroring.
 
-The full Arch package list is `PACKAGES` at the top of `install.sh`. A few
+The full Arch package lists are at the top of `install.sh`: `PACKAGES` for
+every machine, plus `I3_PACKAGES` or `HYPRLAND_PACKAGES`. A few
 that are easy to drop by mistake:
 
 `xclip` is not optional: nvim sets `clipboard = 'unnamedplus'`, which silently
@@ -99,6 +111,25 @@ Without it the lock screen still locks, on a solid colour. Its
 theme is `i3/.config/betterlockscreen/betterlockscreenrc` in this repo —
 note the directory: the older `~/.config/betterlockscreenrc` path still works
 but warns on every lock.
+
+### Hyprland
+
+`hyprland/.config/hypr/hyprland.lua` is the whole desktop (Hyprland 0.55+
+reads Lua, not the old `hyprland.conf`), with i3-style keys: `Super+Enter`
+terminal, `Super+D` launcher, `Super+Shift+Q` close, `Super+Esc` lock,
+`Super+Shift+E` exit. It starts `waybar` (bar), `mako` (notifications) and
+`hypridle` (`hypridle.conf`: lock at 5 min, screen off at 6, suspend at 15),
+which locks with `hyprlock` (`hyprlock.conf`). After editing,
+`hyprctl reload && hyprctl configerrors` should print nothing past `ok`.
+
+The monitor rule uses `scale = 1`; Hyprland's `auto` picked 1.5 on the 14"
+1080p laptop, which made everything too big. A HiDPI screen will want more.
+
+### kitty
+
+`kitty.conf` is shared; it ends with `include ${KITTY_OS}.conf`, so
+`linux.conf` or `macos.conf` holds that OS's overrides (the Mac gets a bigger
+`font_size`, since macOS renders points smaller).
 
 The `alacritty` package ships `themes/` alongside `alacritty.toml`, because the
 config `import`s a theme from it. Stow both together (`stow -t ~ alacritty`) —

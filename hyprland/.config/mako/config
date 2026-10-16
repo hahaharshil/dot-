@@ -1,0 +1,8 @@
+# mako: notification popups
+font=JetBrainsMono Nerd Font 11
+background-color=#1a1a1a
+text-color=#dddddd
+border-color=#33ccff
+border-size=2
+border-radius=6
+default-timeout=5000

@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# Set up an Arch + i3 machine from this repo, from a bare archinstall:
+# Set up an Arch machine from this repo, from a bare archinstall, with the
+# i3 (X11) or Hyprland (Wayland) desktop:
 #
 #   curl -fsSL https://raw.githubusercontent.com/hahaharshil/dot-/master/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/hahaharshil/dot-/master/install.sh | DESKTOP=hyprland bash
 #
-# or, from a clone: ./install.sh
+# or, from a clone: ./install.sh, DESKTOP=hyprland ./install.sh
+#
+# Without DESKTOP it sets up whichever of i3 and Hyprland is already
+# installed (both, if both are), and i3 on a machine with neither. Each
+# desktop reads only its own configs, so having both stowed is harmless.
 #
 # Needs only a sudo user and a network connection; works from any archinstall
 # profile, Minimal included. Safe to re-run: every step skips what is done.
@@ -11,19 +17,28 @@
 set -euo pipefail
 
 REPO=https://github.com/hahaharshil/dot-.git
+# Every machine, whatever the desktop.
 PACKAGES=(
     git base-devel stow
-    # X and a login screen, so a Minimal profile boots into i3 too. --needed
-    # makes these no-ops when archinstall's i3 profile already put them there.
-    xorg-server xorg-xinit ly mesa
-    i3-wm i3blocks dmenu xss-lock dex xorg-xset feh brightnessctl
-    networkmanager network-manager-applet flameshot xclip sysstat
+    # A login screen, so a Minimal profile boots into the desktop too. --needed
+    # makes these no-ops when archinstall's profile already put them there.
+    ly mesa brightnessctl
+    networkmanager network-manager-applet sysstat
     pipewire pipewire-pulse wireplumber
     bluez bluez-utils blueman
-    alacritty ttf-jetbrains-mono-nerd fastfetch
+    alacritty kitty ttf-jetbrains-mono-nerd fastfetch
     neovim clang gcc
 )
-STOW_PACKAGES=(nvim i3 alacritty bash)
+I3_PACKAGES=(
+    xorg-server xorg-xinit
+    i3-wm i3blocks dmenu xss-lock dex xorg-xset feh flameshot xclip
+)
+HYPRLAND_PACKAGES=(
+    hyprland wmenu hyprlock hypridle hyprpolkitagent
+    xdg-desktop-portal-hyprland xdg-desktop-portal-gtk waybar mako bluetui
+    grim slurp wl-clipboard playerctl pcmanfm noto-fonts noto-fonts-emoji
+)
+STOW_PACKAGES=(nvim alacritty kitty bash)  # plus one per desktop: i3, hyprland
 
 say()  { printf '\n\033[1;32m::\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!!\033[0m %s\n' "$*" >&2; }
@@ -35,22 +50,49 @@ main() {
     [ "$(id -u)" -ne 0 ] || { echo "Run as your user, not root; it sudos itself." >&2; exit 1; }
     command -v pacman >/dev/null || { echo "Arch only (needs pacman)." >&2; exit 1; }
 
+    pick_desktops
     install_packages
-    install_aur
+    has_desktop i3 && install_aur
     clone_repos
     stow_packages
-    ensure_host_file
+    has_desktop i3 && ensure_host_file
     enable_services
     install_nvim_plugins
 
-    say "Done. Reboot, or \$mod+Shift+r if already in i3."
+    say "Done (${DESKTOPS[*]}). Reboot, or reload your desktop if already in it."
     if ls /sys/class/power_supply/BAT* >/dev/null 2>&1; then
         echo "This is a laptop: run $DOTS/laptop-setup.sh next."
     fi
 }
 
+# Fills DESKTOPS with i3 and/or hyprland: from $DESKTOP if set, else from
+# what's installed, else i3. Runs before install_packages, so it sees the
+# machine as it was.
+pick_desktops() {
+    DESKTOPS=()
+    if [ -n "${DESKTOP:-}" ]; then
+        local d
+        for d in $DESKTOP; do
+            case $d in
+                i3|hyprland) DESKTOPS+=("$d") ;;
+                *) echo "DESKTOP must be i3, hyprland or \"i3 hyprland\", not '$d'." >&2; exit 1 ;;
+            esac
+        done
+    else
+        pacman -Qq i3-wm    >/dev/null 2>&1 && DESKTOPS+=(i3)
+        pacman -Qq hyprland >/dev/null 2>&1 && DESKTOPS+=(hyprland)
+        [ ${#DESKTOPS[@]} -gt 0 ] || DESKTOPS=(i3)
+    fi
+    say "Desktop: ${DESKTOPS[*]}"
+    STOW_PACKAGES+=("${DESKTOPS[@]}")
+}
+
+has_desktop() { [[ " ${DESKTOPS[*]} " == *" $1 "* ]]; }
+
 install_packages() {
     say "Installing packages"
+    has_desktop i3       && PACKAGES+=("${I3_PACKAGES[@]}")
+    has_desktop hyprland && PACKAGES+=("${HYPRLAND_PACKAGES[@]}")
     # pipewire-pulse conflicts with pulseaudio, and --noconfirm answers "no"
     # to removing it, which fails the whole transaction. Swap it out first.
     # Take its plugins (pulseaudio-bluetooth, -alsa, ...) with it, or they're
@@ -97,6 +139,7 @@ clone_repos() {
     fi
     echo "dotfiles: $DOTS"
 
+    has_desktop i3 || return 0
     [ -d "$HOME/.config/i3blocks-contrib" ] ||
         git clone --depth 1 https://github.com/vivien/i3blocks-contrib "$HOME/.config/i3blocks-contrib"
 }
