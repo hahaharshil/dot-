@@ -13,7 +13,7 @@ opacity = 1.0
 option_as_alt = "Both"  # macOS only: make Option send Alt
 
 [font]
-size = 10.0  # CLion's own default is 13
+size = 6.0  # CLion's own default is 13
 
 # The Nerd Font build is required, not cosmetic: nvim-tree and
 # nvim-web-devicons draw patched glyphs the plain font renders as tofu.
