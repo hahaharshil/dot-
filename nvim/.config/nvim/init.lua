@@ -146,6 +146,87 @@ require("lazy").setup({
       })
     end,
   },
+
+  -- WEB (HTML / CSS / JS) -------------------------------------------------
+  {
+    -- Installs the web language servers and formatter into nvim's own data
+    -- dir, so nothing needs npm -g / sudo, and it works the same on macOS.
+    "mason-org/mason.nvim",
+    dependencies = "WhoIsSethDaniel/mason-tool-installer.nvim",
+    config = function()
+      require("mason").setup()
+      require("mason-tool-installer").setup({
+        ensure_installed = {
+          "html-lsp",                   -- html
+          "css-lsp",                    -- cssls
+          "typescript-language-server", -- ts_ls (JS too)
+          "emmet-language-server",      -- div.box>ul>li*3 expansions
+          "eslint-lsp",                 -- only attaches in projects with an eslint config
+          "prettierd",                  -- formatter
+          "tree-sitter-cli",            -- nvim-treesitter needs it to build parsers
+        },
+      })
+    end,
+  },
+  {
+    -- Real syntax highlighting + indentation (main branch: the 0.12 rewrite)
+    "nvim-treesitter/nvim-treesitter",
+    branch = "main",
+    lazy = false,
+    build = ":TSUpdate",
+    config = function()
+      local parsers = { "html", "css", "javascript", "typescript", "tsx", "json", "jsdoc" }
+      -- tree-sitter-cli comes from Mason, so on the very first launch it may
+      -- still be downloading; the next start picks it up.
+      if vim.fn.executable("tree-sitter") == 1 then
+        require("nvim-treesitter").install(parsers)
+      end
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "html", "css", "scss", "javascript", "javascriptreact", "typescript", "typescriptreact", "json" },
+        callback = function(ev)
+          if pcall(vim.treesitter.start, ev.buf) then
+            vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
+      })
+    end,
+  },
+  {
+    -- Auto-close <div> as you type it, and rename the closing tag with the opening one
+    "windwp/nvim-ts-autotag",
+    event = { "BufReadPre", "BufNewFile" },
+    opts = {},
+  },
+  {
+    -- Format on save with prettier (prettierd daemon, falls back to prettier)
+    "stevearc/conform.nvim",
+    event = "BufWritePre",
+    cmd = "ConformInfo",
+    config = function()
+      local web = { "prettierd", "prettier", stop_after_first = true }
+      require("conform").setup({
+        formatters_by_ft = {
+          html = web, css = web, scss = web, json = web,
+          javascript = web, javascriptreact = web,
+          typescript = web, typescriptreact = web,
+        },
+        -- "never": without it, saving a .cpp would fall back to clangd and
+        -- reformat CP code. Only the prettier filetypes above format on save.
+        format_on_save = { timeout_ms = 1000, lsp_format = "never" },
+      })
+    end,
+  },
+  {
+    -- Paint #ff8800 / rgb() / hsl() / named colors with their actual color
+    "brenoprata10/nvim-highlight-colors",
+    ft = { "html", "css", "scss", "javascript", "javascriptreact", "typescript", "typescriptreact" },
+    opts = { render = "virtual", virtual_symbol = "■", enable_named_colors = true },
+  },
+  {
+    -- :LivePreview start -> opens the file in the browser and reloads on save
+    "brianhuster/live-preview.nvim",
+    cmd = "LivePreview",
+  },
 })
 
 -- 3. COLORSCHEME & UI
@@ -180,6 +261,20 @@ vim.lsp.config('clangd', { cmd_env = clangd_env })
 if vim.fn.executable('clangd') == 1 then
   vim.lsp.enable('clangd')
 end
+
+-- Web servers come from Mason (see the plugin spec), and their configs from
+-- nvim-lspconfig's lsp/*.lua, same as clangd. eslint only attaches where an
+-- eslint config exists, so it stays quiet in plain HTML/JS folders.
+vim.lsp.enable({ 'html', 'cssls', 'ts_ls', 'emmet_language_server', 'eslint' })
+
+-- Web files conventionally use 2-space indents
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'html', 'css', 'scss', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'json' },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+  end,
+})
 
 -- Errors inline next to the code; off by default since 0.11
 vim.diagnostic.config({ virtual_text = true })
@@ -359,6 +454,19 @@ vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to Definition' })
 
 -- Jump to declaration
 vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to Declaration' })
+
+-- LSP actions (0.11+ also has K hover, grr references, grn rename, gra code action)
+vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename symbol' })
+vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code action' })
+
+-- Format the buffer now (it also happens on save)
+vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
+  require('conform').format({ async = true, lsp_format = 'fallback' })
+end, { desc = 'Format buffer' })
+
+-- Open the current HTML file in the browser, live-reloading on save
+vim.keymap.set('n', '<leader>lp', '<cmd>LivePreview start<CR>', { desc = 'Live preview in browser' })
+vim.keymap.set('n', '<leader>ls', '<cmd>LivePreview close<CR>', { desc = 'Stop live preview' })
 
 -- Escape out of a terminal window
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Leave terminal mode' })
