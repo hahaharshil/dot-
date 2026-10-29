@@ -55,8 +55,8 @@ The rest of this file explains what the scripts do, for setting up by hand.
 
 Stow one package at a time, so a macOS machine can take `nvim` without `i3`.
 `i3` and `hyprland` are Linux-only; `nvim`, `alacritty`, `kitty` and `bash`
-are portable as-is (on a Mac: `brew install stow kitty`, then
-`stow -d ~/dot- -t ~ kitty`). `i3`
+are portable as-is (on a Mac: `brew install stow kitty node`, then
+`stow -d ~/dot- -t ~ kitty`; nvim's web language servers need `node`). `i3`
 needs `feh` (wallpaper), `xorg-xset` (disables screen blanking and the idle
 lock) and `betterlockscreen` (the `$mod+q` lock screen, AUR) — these are
 `exec` lines, so a missing binary fails silently at login rather than
@@ -68,7 +68,9 @@ that are easy to drop by mistake:
 
 `xclip` is not optional: nvim sets `clipboard = 'unnamedplus'`, which silently
 does nothing on X11 without a clipboard tool. `clangd` comes from the `clang`
-package. `git` is needed for lazy.nvim to bootstrap. `sysstat` provides the
+package. `git` is needed for lazy.nvim to bootstrap. `nodejs`, `npm` and
+`unzip` are for Mason, which installs the HTML/CSS/JS language servers and
+prettierd. `sysstat` provides the
 `mpstat` the cpu block runs. The volume keys use `pactl` and the volume block
 uses `wpctl`, so PipeWire needs both its Pulse shim and WirePlumber.
 

@@ -28,6 +28,9 @@ PACKAGES=(
     bluez bluez-utils blueman
     alacritty kitty ttf-jetbrains-mono-nerd fastfetch
     neovim clang gcc
+    # Mason downloads nvim's web language servers and prettierd as npm packages
+    # and unpacks some tools from zips; without these they fail to install.
+    nodejs npm unzip
 )
 I3_PACKAGES=(
     xorg-server xorg-xinit
@@ -234,6 +237,12 @@ install_nvim_plugins() {
     # Not fatal: nvim installs them on first launch anyway.
     nvim --headless "+Lazy! restore" +qa ||
         warn "nvim plugin install failed; open nvim to retry."
+    # Mason's web tools, then the treesitter parsers. Parsers need the
+    # tree-sitter CLI that Mason installs, so a first launch without this step
+    # has no web highlighting until nvim is restarted.
+    nvim --headless +MasonToolsInstallSync +qa &&
+        nvim --headless "+lua require('nvim-treesitter').install({'html','css','javascript','typescript','tsx','json','jsdoc'}):wait(300000)" +qa ||
+        warn "nvim web tools failed to install; open nvim to retry."
 }
 
 main "$@"
